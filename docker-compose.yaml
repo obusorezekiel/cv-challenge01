@@ -5,7 +5,7 @@ services:
     build:
       context: ./backend
     environment:
-      DATABASE_URL: postgres://app:changethis123@postgres-db:5432/app
+      DATABASE_URL: postgres://app:postgres@db:5432/app
     container_name: fastapi_app
     ports:
       - "8000:8000"
@@ -57,9 +57,6 @@ services:
       - ./letsencrypt:/etc/letsencrypt
     depends_on:
       - db
-      - backend
-      - frontend
-      - adminer
 
 volumes:
   postgres_data:
