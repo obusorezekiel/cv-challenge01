@@ -1,19 +1,34 @@
-# Use the latest official Python image as a base
-FROM python:latest
+# Use a specific Python version
+FROM python:3.10-slim
 
+# Install system dependencies and Rust toolchain
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libssl-dev \
+    curl \
+    && curl https://sh.rustup.rs -sSf | sh -s -- -y \
+    && export PATH="/root/.cargo/bin:$PATH" \
+    && rustup default stable \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y \
-    nodejs \
-    npm
+# Install Poetry
+RUN curl -sSL https://install.python-poetry.org | python3 - \
+    && export PATH="/root/.local/bin:$PATH" \
+    && poetry --version
 
-RUN pip install poetry
-
+# Set the working directory
 WORKDIR /app
 
-COPY . .
+# Copy application files
+COPY . /app
 
-RUN poetry install
+# Install dependencies
+RUN poetry config virtualenvs.create false \
+    && poetry install
 
+# Expose the application port
 EXPOSE 8000
 
-CMD ["sh", "-c", "poetry run bash ./prestart.sh && poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"]
+# Start the application
+CMD ["bash", "-c", "poetry run bash ./prestart.sh && poetry run uvicorn app.main:app --reload --host 0.0.0.0"]
