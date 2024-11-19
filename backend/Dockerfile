@@ -1,33 +1,24 @@
-# Use a specific Python version
-FROM python:3.10-slim
+# Use an official Python runtime as a parent image
+FROM python:3.10
 
-# Install system dependencies and Rust toolchain
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libssl-dev \
-    curl \
-    && curl https://sh.rustup.rs -sSf | sh -s -- -y \
-    && export PATH="/root/.cargo/bin:$PATH" \
-    && rustup default stable \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+RUN set -xe
 
 # Install Poetry
-RUN curl -sSL https://install.python-poetry.org | python3 - \
-    && export PATH="/root/.local/bin:$PATH" \
-    && poetry --version
+RUN curl -sSL https://install.python-poetry.org | python3 - --git https://github.com/python-poetry/poetry.git@master
 
-# Set the working directory
+ENV PATH="/root/.local/bin:$PATH"
+
+RUN poetry --version
+# RUN poetry new foobar
+
+# Set up the working directory
 WORKDIR /app
 
-# Copy application files
+# Copy and install dependencies
 COPY . /app
 
-# Install dependencies
-RUN poetry config virtualenvs.create false \
-    && poetry install
+RUN poetry install
 
-# Expose the application port
 EXPOSE 8000
 
 # Start the application
