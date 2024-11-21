@@ -14,8 +14,9 @@ scrape_configs:
       - targets:
           - localhost
         labels:
-          job: varlogs
-          __path__: /var/log/*log
+          job: system
+          host: ${HOSTNAME}
+          __path__: /var/log/*.log
 
   - job_name: containers
     docker_sd_configs:
@@ -25,4 +26,4 @@ scrape_configs:
         regex: '/(.*)'
         target_label: 'container'
       - source_labels: ['__meta_docker_container_log_stream']
-        target_label: 'log_stream'
+        target_label: 'stream'
