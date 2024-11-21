@@ -1,5 +1,8 @@
 auth_enabled: false
 
+common:
+  path_prefix: /loki
+
 server:
   http_listen_port: 3100
   grpc_listen_port: 9096
@@ -18,9 +21,9 @@ limits_config:
   allow_structured_metadata: true
 
 storage_config:
-  boltdb_shipper:
-    active_index_directory: /loki/boltdb-shipper-active
-    cache_location: /loki/boltdb-shipper-cache
+  tsdb_shipper:
+    active_index_directory: /loki/tsdb-shipper-active
+    cache_location: /loki/tsdb-shipper-cache
     cache_ttl: 24h
 
   filesystem:
