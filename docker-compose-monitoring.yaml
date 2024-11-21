@@ -34,11 +34,11 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
     networks:
       - shared_network
-    depends_on:
-      - backend
-      - frontend
-      - adminer
-      - db
+    # depends_on:
+    #   - backend
+    #   - frontend
+    #   - adminer
+    #   - db
 
   loki:
     image: grafana/loki:latest
