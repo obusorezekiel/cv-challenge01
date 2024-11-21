@@ -38,7 +38,6 @@ services:
       - backend
       - frontend
       - adminer
-      - proxy
       - db
 
   loki:
