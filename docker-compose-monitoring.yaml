@@ -38,7 +38,9 @@ services:
     volumes:
       - ./monitoring/loki:/etc/loki
       - loki_data:/loki
-    command: -config.file=/etc/loki/loki-config.yml
+    command: 
+      - '-config.file=/etc/loki/loki-config.yml'
+      - '-config.expand-env=true'
     networks:
       - shared_network
 
