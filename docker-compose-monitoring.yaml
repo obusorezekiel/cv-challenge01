@@ -2,97 +2,61 @@
 services:
 # Monitoring Stack Services
   prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    volumes:
-      - ./monitoring/prometheus:/etc/prometheus
-      - prometheus_data:/prometheus
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
       - shared_network
+    depends_on:
+      - cadvisor
 
   grafana:
     image: grafana/grafana:latest
-    container_name: grafana
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=changeme
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
-    depends_on:
-      - prometheus
     ports:
       - "3000:3000"
-    networks:
-      - shared_network
-
-  loki:
-    image: grafana/loki:3.0.0
-    container_name: loki
     volumes:
-      - ./monitoring/loki:/etc/loki
-      - loki_data:/loki
-    command: 
-    - '-config.file=/etc/loki/loki-config.yml'
-    - '-log.level=debug'
-    - '-print-config-stderr'
-    - '-config.expand-env=true'
-    user: "0:0"  # Run as root to avoid permission issues
-    networks:
-      - shared_network
-
-  promtail:
-    image: grafana/promtail:latest
-    container_name: promtail
-    volumes:
-      - ./monitoring/promtail:/etc/promtail
-      - /var/log:/var/log
-      - /var/lib/docker/containers:/var/lib/docker/containers
-    command: -config.file=/etc/promtail/promtail-config.yml
+      - grafana:/var/lib/grafana
     networks:
       - shared_network
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
-    container_name: cadvisor
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    ports:
+      - "8081:8080"
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
-    privileged: true
-    devices:
-      - /dev/kmsg:/dev/kmsg
-    ports:
-      - "8082:8080"
     networks:
       - shared_network
+    depends_on:
+      - backend
+      - frontend
+      - adminer
+      - proxy
+      - db
 
-  node-exporter:
-    image: prom/node-exporter:latest
-    container_name: node-exporter
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - 3100:3100
     volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-    command:
-      - '--path.procfs=/host/proc'
-      - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.ignored-mount-points'
-      - '^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)'
+      - ./monitoring/loki-config.yml:/etc/loki/loki-config.yaml
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - ./monitoring/promtail-config.yml:/etc/promtail/promtail-config.yaml
     networks:
       - shared_network
 
 volumes:
-  prometheus_data:
-  grafana_data:
-  loki_data:
+  grafana:
 
 networks:
   shared_network:
