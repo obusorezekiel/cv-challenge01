@@ -56,6 +56,8 @@ services:
       - ./monitoring/promtail-config.yml:/etc/promtail/promtail-config.yaml
     networks:
       - shared_network
+    depends_on:
+      - loki
 
 volumes:
   grafana:
