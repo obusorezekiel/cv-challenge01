@@ -52,14 +52,13 @@ services:
       - ./monitoring/loki-config.yml:/etc/loki/loki-config.yaml
     networks:
       - shared_network
-    
-
   promtail:
     image: grafana/promtail:latest
-    volumes:
-      - ./monitoring/promtail-config.yml:/etc/promtail/promtail-config.yaml
     networks:
       - shared_network
+    volumes:
+      - ./monitoring/promtail-config.yml:/etc/promtail/promtail-config.yaml
+      - /var/log:/var/log
     depends_on:
       - loki
 
