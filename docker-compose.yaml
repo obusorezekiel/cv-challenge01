@@ -59,7 +59,7 @@ services:
     volumes:
       - data:/data
       - letsencrypt:/etc/letsencrypt
-      - ./nginx.conf:/data/nginx/custom/http_top.conf
+      - ./nginx.conf:/etc/nginx/nginx.conf
     restart: always
     depends_on:
       - frontend
