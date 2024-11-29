@@ -14,8 +14,6 @@ services:
       - ./backend/.env
     networks:
       - shared_network
-    secrets:
-      - postgres_password
 
   frontend:
     build:
@@ -37,10 +35,8 @@ services:
       - postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: app
-      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_PASSWORD: changethis123
       POSTGRES_DB: app
-    secrets:
-      - postgres_password
     networks:
       - shared_network
 
@@ -80,7 +76,3 @@ volumes:
 networks:
   shared_network:
     driver: bridge
-
-secrets:
-   postgres_password:
-     file: ./POSTGRES_PASSWORD.txt
