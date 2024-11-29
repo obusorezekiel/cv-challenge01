@@ -47,26 +47,48 @@ services:
       - "8080:8080"
     networks:
       - shared_network
-
-  proxy:
-    image: jc21/nginx-proxy-manager:latest
-    container_name: nginx_proxy_manager
+  
+  nginx:
+    image: 'jc21/nginx-proxy-manager:2.10.4'
     ports:
-      - "80:80"
-      - "443:443"
-      - "81:81"
+      - '80:80'
+      - '443:443'
+      - '8090:81'
     environment:
       DB_SQLITE_FILE: "/data/database.sqlite"
     volumes:
-      - ./data:/data
-      - ./letsencrypt:/etc/letsencrypt
+      - data:/data
+      - letsencrypt:/etc/letsencrypt
+      - ./nginx.conf:/data/nginx/custom/http_top.conf
+    restart: always
     depends_on:
-      - db
-      - backend
       - frontend
+      - backend
       - adminer
+      - prometheus
+      - grafana
     networks:
       - shared_network
+
+  # proxy:
+  #   image: jc21/nginx-proxy-manager:latest
+  #   container_name: nginx_proxy_manager
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #     - "81:81"
+  #   environment:
+  #     DB_SQLITE_FILE: "/data/database.sqlite"
+  #   volumes:
+  #     - ./data:/data
+  #     - ./letsencrypt:/etc/letsencrypt
+  #   depends_on:
+  #     - db
+  #     - backend
+  #     - frontend
+  #     - adminer
+  #   networks:
+  #     - shared_network
 
 volumes:
   postgres_data:
