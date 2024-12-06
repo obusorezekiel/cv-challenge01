@@ -34,10 +34,10 @@ jobs:
       
       - name: Update docker-compose
         run: |
-          sed -i 's/challenge-frontend:latest/challenge-frontend:${{ github.sha }}/g' docker-compose.yml
-          sed -i 's/challenge-backend:latest/challenge-backend:${{ github.sha }}/g' docker-compose.yml
+          sed -i 's/challenge-frontend:latest/challenge-frontend:${{ github.sha }}/g' docker-compose.yaml
+          sed -i 's/challenge-backend:latest/challenge-backend:${{ github.sha }}/g' docker-compose.yaml
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add application/docker-compose.yaml
+          git add docker-compose.yaml
           git commit -m "Update image tags"
           git push
