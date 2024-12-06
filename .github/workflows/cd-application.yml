@@ -9,8 +9,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      # Step 1: Check out the code
       - uses: actions/checkout@v3
 
+      # Step 2: Configure AWS Credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -18,12 +20,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      # Step 3: Set up SSH
       - name: Set up SSH
         run: |
             mkdir -p ~/.ssh
             echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa
             chmod 600 ~/.ssh/id_rsa
-  
+
+      # Step 4: Find EC2 Public IP
       - name: Find EC2 Public IP
         id: find-ip
         run: |
@@ -31,28 +35,31 @@ jobs:
               --filters "Name=tag:Name,Values=dev-instance" "Name=instance-state-name,Values=running" \
               --query "Reservations[0].Instances[0].PublicIpAddress" \
               --output text)
-            if [ "$INSTANCE_IP" = "None" ]; then
+            if [ "$INSTANCE_IP" = "None" ] || [ -z "$INSTANCE_IP" ]; then
               echo "Error: No running instance found with the tag Name: dev-instance"
               exit 1
             fi
             echo "::set-output name=instance_ip::$INSTANCE_IP"
-  
+
+      # Step 5: Display the found IP
       - name: Display Found IP
         run: |
             echo "Found EC2 Instance IP: ${{ steps.find-ip.outputs.instance_ip }}"
-  
+
+      # Step 6: Copy Files to EC2
       - name: Copy Files to EC2
         env:
             INSTANCE_IP: ${{ steps.find-ip.outputs.instance_ip }}
         run: |
-            sudo rsync -avz -e "ssh -i "~/.ssh/id_rsa" -o StrictHostKeyChecking=no" ./ \
-            ubuntu@$INSTANCE_IP:/devops_project/
-      
-      - name: Run Compose
+            rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./ \
+            ubuntu@$INSTANCE_IP:/opt/devops_project/
+
+      # Step 7: Run Docker Compose
+      - name: Run Docker Compose
         env:
             INSTANCE_IP: ${{ steps.find-ip.outputs.instance_ip }}
         run: |
-            ssh -i "~/.ssh/id_rsa" -o StrictHostKeyChecking=no ubuntu@$INSTANCE_IP << EOF
+            ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@$INSTANCE_IP << EOF
             cd /opt/devops_project
             docker-compose pull
             docker-compose up -d
