@@ -45,7 +45,7 @@ jobs:
         env:
             INSTANCE_IP: ${{ steps.find-ip.outputs.instance_ip }}
         run: |
-            rsync -avz -e "ssh -i "~/.ssh/id_rsa" -o StrictHostKeyChecking=no" ./ \
+            sudo rsync -avz -e "ssh -i "~/.ssh/id_rsa" -o StrictHostKeyChecking=no" ./ \
             ubuntu@$INSTANCE_IP:/devops_project/
       
       - name: Run Compose
