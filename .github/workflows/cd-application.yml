@@ -60,7 +60,7 @@ jobs:
             INSTANCE_IP: ${{ steps.find-ip.outputs.instance_ip }}
         run: |
             ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@$INSTANCE_IP << EOF
-            cd /devops_project
+            cd ~/devops_project
             docker-compose pull
             docker-compose up -d
             EOF
