@@ -35,8 +35,8 @@ jobs:
       - name: Update docker-compose
         run: |
           # Ensure correct image tags are updated
-          sed -i 's|${{ secrets.DOCKERHUB_USERNAME }}/challenge-03-backend:latest|${{ secrets.DOCKERHUB_USERNAME }}/challenge-03-backend:${{ github.sha }}|g' docker-compose.yaml
-          sed -i 's|${{ secrets.DOCKERHUB_USERNAME }}/challenge-03-frontend:latest|${{ secrets.DOCKERHUB_USERNAME }}/challenge-03-frontend:${{ github.sha }}|g' docker-compose.yaml
+          sed -i 's|${{ secrets.DOCKERHUB_USERNAME }}/challenge-backend:latest|${{ secrets.DOCKERHUB_USERNAME }}/challenge-backend:${{ github.sha }}|g' docker-compose.yaml
+          sed -i 's|${{ secrets.DOCKERHUB_USERNAME }}/challenge-frontend:latest|${{ secrets.DOCKERHUB_USERNAME }}/challenge-frontend:${{ github.sha }}|g' docker-compose.yaml
           
           # Check if changes were made
           if [[ -n $(git status -s) ]]; then
