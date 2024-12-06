@@ -34,10 +34,32 @@ jobs:
       
       - name: Update docker-compose
         run: |
-          sed -i 's/challenge-frontend:latest/challenge-frontend:${{ github.sha }}/g' docker-compose.yaml
-          sed -i 's/challenge-backend:latest/challenge-backend:${{ github.sha }}/g' docker-compose.yaml
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add docker-compose.yaml
-          git commit -m "Update image tags"
-          git push
+          # Check the current content of the file
+          cat docker-compose.yaml
+      
+          # Find the current image tags
+          echo "Finding current frontend image tag:"
+          grep -i "image: *challenge-frontend" docker-compose.yaml
+      
+          echo "Finding current backend image tag:"
+          grep -i "image: *challenge-backend" docker-compose.yaml
+      
+          # Update image tags only if the strings exist
+          if grep -q "challenge-frontend:latest" docker-compose.yaml; then
+            sed -i "s|challenge-frontend:latest|challenge-frontend:${{ github.sha }}|g" docker-compose.yaml
+          fi
+      
+          if grep -q "challenge-backend:latest" docker-compose.yaml; then
+            sed -i "s|challenge-backend:latest|challenge-backend:${{ github.sha }}|g" docker-compose.yaml
+          fi
+      
+          # Check if there are any changes
+          if [[ -n $(git status -s) ]]; then
+            git config user.name github-actions
+            git config user.email github-actions@github.com
+            git add docker-compose.yaml
+            git commit -m "Update image tags to ${{ github.sha }}"
+            git push
+          else
+            echo "No changes to commit"
+          fi
