@@ -21,8 +21,8 @@ jobs:
       - name: Set up SSH
         run: |
             mkdir -p ~/.ssh
-            echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa
-            chmod 600 ~/.ssh/id_rsa
+            echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa_pub
+            chmod 600 ~/.ssh/id_rsa_pub
   
       - name: Find EC2 Public IP
         id: find-ip
@@ -45,14 +45,14 @@ jobs:
         env:
             INSTANCE_IP: ${{ steps.find-ip.outputs.instance_ip }}
         run: |
-            rsync -avz -e "ssh -o StrictHostKeyChecking=no" ./ \
+            rsync -avz -e "ssh -i "~/.ssh/id_rsa_pub" -o StrictHostKeyChecking=no" ./ \
             ubuntu@$INSTANCE_IP:/opt/devops_project/
       
-      - name: Run Docker Compose
+      - name: Run Compose
         env:
             INSTANCE_IP: ${{ steps.find-ip.outputs.instance_ip }}
         run: |
-            ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_IP << EOF
+            ssh -i "~/.ssh/id_rsa_pub" -o StrictHostKeyChecking=no ubuntu@$INSTANCE_IP << EOF
             cd /opt/devops_project
             docker-compose pull
             docker-compose up -d
