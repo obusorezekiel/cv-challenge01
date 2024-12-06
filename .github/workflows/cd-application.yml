@@ -1,0 +1,59 @@
+name: Application CD
+
+on:
+  push:
+    branches:
+      - 'deployment'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Set up SSH
+        run: |
+            mkdir -p ~/.ssh
+            echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+  
+      - name: Find EC2 Public IP
+        id: find-ip
+        run: |
+            INSTANCE_IP=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=dev-instance" "Name=instance-state-name,Values=running" \
+              --query "Reservations[0].Instances[0].PublicIpAddress" \
+              --output text)
+            if [ "$INSTANCE_IP" = "None" ]; then
+              echo "Error: No running instance found with the tag Name: dev-instance"
+              exit 1
+            fi
+            echo "::set-output name=instance_ip::$INSTANCE_IP"
+  
+      - name: Display Found IP
+        run: |
+            echo "Found EC2 Instance IP: ${{ steps.find-ip.outputs.instance_ip }}"
+  
+      - name: Copy Files to EC2
+        env:
+            INSTANCE_IP: ${{ steps.find-ip.outputs.instance_ip }}
+        run: |
+            rsync -avz -e "ssh -o StrictHostKeyChecking=no" ./ \
+            ubuntu@$INSTANCE_IP:/opt/devops_project/
+      
+      - name: Run Docker Compose
+        env:
+            INSTANCE_IP: ${{ steps.find-ip.outputs.instance_ip }}
+        run: |
+            ssh -o StrictHostKeyChecking=no ec2-user@$INSTANCE_IP << EOF
+            cd /opt/devops_project
+            docker-compose pull
+            docker-compose up -d
+            EOF
