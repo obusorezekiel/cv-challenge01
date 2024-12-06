@@ -45,14 +45,14 @@ jobs:
         env:
             INSTANCE_IP: ${{ steps.find-ip.outputs.instance_ip }}
         run: |
-            rsync -avz -e "ssh -i "~/.ssh/id_rsa_pub" -o StrictHostKeyChecking=no" ./ \
+            rsync -avz -e "ssh -o StrictHostKeyChecking=no" ./ \
             ubuntu@$INSTANCE_IP:/opt/devops_project/
       
       - name: Run Compose
         env:
             INSTANCE_IP: ${{ steps.find-ip.outputs.instance_ip }}
         run: |
-            ssh -i "~/.ssh/id_rsa_pub" -o StrictHostKeyChecking=no ubuntu@$INSTANCE_IP << EOF
+            ssh -o StrictHostKeyChecking=no ubuntu@$INSTANCE_IP << EOF
             cd /opt/devops_project
             docker-compose pull
             docker-compose up -d
