@@ -1,10 +1,8 @@
-include:
-  - docker-compose-monitoring.yaml
+# include:
+#   - docker-compose-monitoring.yaml
 services:
-  # Application Stack Services
   backend:
-    build:
-      context: ./backend
+    image: obusorezekiel/challenge-03-backend:latest
     container_name: fastapi_app
     ports:
       - "8000:8000"
@@ -16,8 +14,7 @@ services:
       - shared_network
 
   frontend:
-    build:
-      context: ./frontend
+    image: obusorezekiel/challenge-03-frontend:latest
     container_name: nodejs_app
     ports:
       - "5173:5173"
