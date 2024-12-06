@@ -2,7 +2,7 @@
 #   - docker-compose-monitoring.yaml
 services:
   backend:
-    image: obusorezekiel/challenge-03-backend:9b277e982f42aeef127d6c075038e67afe4ece30
+    image: obusorezekiel/challenge-backend:9b277e982f42aeef127d6c075038e67afe4ece30
     container_name: fastapi_app
     ports:
       - "8000:8000"
@@ -14,7 +14,7 @@ services:
       - shared_network
 
   frontend:
-    image: obusorezekiel/challenge-03-frontend:9b277e982f42aeef127d6c075038e67afe4ece30
+    image: obusorezekiel/challenge-frontend:9b277e982f42aeef127d6c075038e67afe4ece30
     container_name: nodejs_app
     ports:
       - "5173:5173"
