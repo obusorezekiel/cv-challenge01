@@ -42,7 +42,7 @@ jobs:
             echo "::set-output name=instance_ip::$INSTANCE_IP"
 
       # Step 5: Display the found IP
-      - name: Display Found IP
+      - name: Display IP
         run: |
             echo "Found EC2 Instance IP: ${{ steps.find-ip.outputs.instance_ip }}"
 
