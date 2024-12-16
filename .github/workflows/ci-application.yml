@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   build-and-test-frontend:
-    name: Build & Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -46,7 +45,6 @@ jobs:
           npm run build
 
   build-and-test-backend:
-    name: Build & Test
     runs-on: ubuntu-latest
     needs: 
       - build-and-test-frontend
@@ -89,16 +87,16 @@ jobs:
           curl -sSL https://install.python-poetry.org | python3 -
           poetry install
           
-      - name: Copy env file
-        run: |
-          cd backend
-          cp .env.sample .env
+      # - name: Copy env file
+      #   run: |
+      #     cd backend
+      #     cp .env.sample .env
 
-      - name: Run app
-        run: |
-          cd backend
-          poetry run bash ./prestart.sh
-          poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+      # - name: Run app
+      #   run: |
+      #     cd backend
+      #     poetry run bash ./prestart.sh
+      #     poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 &
 
       - name: Run tests
         run: |
