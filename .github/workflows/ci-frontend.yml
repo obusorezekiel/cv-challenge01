@@ -1,7 +1,6 @@
 name: Frontend CI Pipeline
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - 'integration'
