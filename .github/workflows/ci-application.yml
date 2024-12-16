@@ -48,7 +48,7 @@ jobs:
   build-and-test-backend:
     name: Build & Test
     runs-on: ubuntu-latest
-    depends-on:
+    needs: 
       - build-and-test-frontend
     services:
       db:
@@ -107,7 +107,7 @@ jobs:
 
   build-and-push:
     runs-on: ubuntu-latest
-    depends-on:
+    needs: 
       - build-and-test-backend
     steps:
       - uses: actions/checkout@v3
@@ -132,11 +132,11 @@ jobs:
       
   uppdate-compose:
     runs-on: ubuntu-latest
-    depends-on:
+    needs: 
       - build-and-push
     steps:
       - uses: actions/checkout@v3  
-      
+
       - name: Update docker-compose
         run: |
           # Ensure correct image tags are updated
