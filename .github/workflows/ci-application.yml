@@ -9,6 +9,42 @@ permissions:
   contents: write  # Grants permission to push changes to the repository
 
 jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' 
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Lint code
+        run: |
+          cd frontend
+          npm run lint | tee /dev/null
+
+      - name: Build
+        run: |
+          cd frontend
+          npm run build
+          
   build-and-push:
     runs-on: ubuntu-latest
     steps:
