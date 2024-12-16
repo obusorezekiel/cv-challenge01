@@ -9,7 +9,7 @@ permissions:
   contents: write  # Grants permission to push changes to the repository
 
 jobs:
-  build-and-test:
+  build-and-test-frontend:
     name: Build & Test
     runs-on: ubuntu-latest
     steps:
@@ -44,9 +44,71 @@ jobs:
         run: |
           cd frontend
           npm run build
+
+  build-and-test-backend:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    depends-on:
+      - build-and-test-frontend
+    services:
+      db:
+        image: postgres:13
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: changethis123
+          POSTGRES_DB: app
+          POSTGRES_HOST: localhost
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry install
           
+      - name: Copy env file
+        run: |
+          cd backend
+          cp .env.sample .env
+
+      - name: Run app
+        run: |
+          cd backend
+          poetry run bash ./prestart.sh
+          poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+
+      - name: Run tests
+        run: |
+          cd backend
+          poetry run pytest | tee /dev/null
+
   build-and-push:
     runs-on: ubuntu-latest
+    depends-on:
+      - build-and-test-backend
     steps:
       - uses: actions/checkout@v3
       
@@ -67,6 +129,13 @@ jobs:
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/challenge-backend:${{ github.sha }} .
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/challenge-backend:${{ github.sha }}
+      
+  uppdate-compose:
+    runs-on: ubuntu-latest
+    depends-on:
+      - build-and-push
+    steps:
+      - uses: actions/checkout@v3  
       
       - name: Update docker-compose
         run: |
